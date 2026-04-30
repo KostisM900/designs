@@ -658,12 +658,31 @@ preloadFlags();
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyA_B05hDbgYhZFHfS1LVF_xuBRoAdK2RLv74yL3PsDT6kGZ0lhtfmjN2zSjK-qB__4iw/exec';
 
 function submitToSheets(semi, countries) {
+  // Generate a unique device ID and store it
+  let deviceId = localStorage.getItem('evf_device_id');
+  if (!deviceId) {
+    deviceId = 'dev_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem('evf_device_id', deviceId);
+  }
+
+  // Check if this device already submitted for this semi-final
+  const submitKey = 'evf_submitted_sf' + semi;
+  if (localStorage.getItem(submitKey)) {
+    return; // Already submitted — skip silently
+  }
+
+  // Mark as submitted before sending
+  localStorage.setItem(submitKey, '1');
+
   fetch(SCRIPT_URL, {
     method: 'POST',
     mode: 'no-cors',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({semi: String(semi), countries: countries.map(c => c.name)})
-  }).catch(() => {}); // silent fail — user shouldn't notice
+    body: JSON.stringify({semi: String(semi), countries: countries.map(c => c.name), deviceId})
+  }).catch(() => {
+    // If failed, remove the flag so they can retry
+    localStorage.removeItem(submitKey);
+  });
 }
 
 function closeSaveModal() {
