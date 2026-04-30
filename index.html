@@ -175,6 +175,11 @@ html,body{
 .save-modal-img{max-width:min(300px,80vw);max-height:55vh;border-radius:12px;object-fit:contain;box-shadow:0 0 40px rgba(255,3,255,0.4);}
 .save-modal-hint{color:#fff;font-size:13px;font-weight:700;letter-spacing:0.3px;text-align:center;background:rgba(255,3,255,0.15);border:1px solid rgba(255,3,255,0.4);border-radius:10px;padding:10px 18px;max-width:280px;}
 .save-modal-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.save-modal-saved{
+  background:rgba(0,200,100,0.15);border:1px solid rgba(0,200,100,0.4);
+  border-radius:10px;padding:10px 18px;
+  color:#00e87a;font-size:13px;font-weight:800;letter-spacing:0.3px;text-align:center;
+}
 .save-modal-close{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:50px;color:#fff;font-family:inherit;font-weight:800;font-size:12px;letter-spacing:1px;padding:10px 24px;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;}
 .save-modal-stats-btn{background:linear-gradient(90deg,#ff03ff,#6c00ff);border:none;border-radius:50px;color:#fff;font-family:inherit;font-weight:800;font-size:12px;letter-spacing:1px;padding:10px 24px;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;}
 
@@ -244,8 +249,8 @@ html,body{
           <div class="cd-date">Tuesday 13 May 2026 · 22:00 Athens time</div>
           <div id="cd1-wrap"></div>
         </div>
-        <button class="menu-btn menu-btn-1" onclick="openSemi(1)">
-          <span>1st Semi-Final</span><span class="menu-btn-num">1</span>
+        <button class="menu-btn menu-btn-1" id="btn-sf1" onclick="handleSemiBtn(1)">
+          <span id="btn-sf1-label">1st Semi-Final</span><span class="menu-btn-num" id="btn-sf1-icon">1</span>
         </button>
 
         <div class="cd-card" style="margin-top:10px;margin-bottom:10px;">
@@ -253,8 +258,8 @@ html,body{
           <div class="cd-date">Thursday 14 May 2026 · 22:00 Athens time</div>
           <div id="cd2-wrap"></div>
         </div>
-        <button class="menu-btn menu-btn-2" onclick="openSemi(2)">
-          <span>2nd Semi-Final</span><span class="menu-btn-num">2</span>
+        <button class="menu-btn menu-btn-2" id="btn-sf2" onclick="handleSemiBtn(2)">
+          <span id="btn-sf2-label">2nd Semi-Final</span><span class="menu-btn-num" id="btn-sf2-icon">2</span>
         </button>
 
         <div class="stats-divider">— Community Predictions —</div>
@@ -316,6 +321,7 @@ html,body{
 
 <!-- Save modal for in-app browsers -->
 <div class="save-modal-overlay" id="saveModal">
+  <div class="save-modal-saved" id="saveModalSaved" style="display:none;">✅ Your predictions have been saved!</div>
   <div class="save-modal-hint">📲 Long-press the image below &amp; tap "Save to Photos"</div>
   <img id="saveModalImg" class="save-modal-img" src="" alt="Your predictions">
   <div class="save-modal-btns">
@@ -405,6 +411,28 @@ renderCountdown(SF2_TIME,'cd2-wrap');
 setInterval(()=>{tickCountdown(SF1_TIME,'cd1-wrap');tickCountdown(SF2_TIME,'cd2-wrap');},1000);
 
 function flagUrl(cc){return'https://flagcdn.com/w80/'+cc+'.png';}
+
+function updateMenuButtons() {
+  [1, 2].forEach(n => {
+    const submitted = localStorage.getItem('evf_submitted_sf' + n);
+    const label = document.getElementById('btn-sf' + n + '-label');
+    const icon = document.getElementById('btn-sf' + n + '-icon');
+    if (submitted && label && icon) {
+      label.textContent = '📊 SF' + n + ' Community Stats';
+      icon.textContent = '→';
+      icon.style.fontSize = '16px';
+    }
+  });
+}
+
+function handleSemiBtn(n) {
+  const submitted = localStorage.getItem('evf_submitted_sf' + n);
+  if (submitted) {
+    openStatsFromMenu(n);
+  } else {
+    openSemi(n);
+  }
+}
 
 function openSemi(n){
   currentSemi=n;selected=new Set();
@@ -636,6 +664,11 @@ function drawFull(ctx,W,H,evfImg,escImg,chosen){
     try{
       const dataUrl=document.getElementById('exportCanvas').toDataURL('image/png');
       document.getElementById('saveModalImg').src=dataUrl;
+      // Show saved confirmation message
+      const savedBadge = document.getElementById('saveModalSaved');
+      savedBadge.style.display = 'block';
+      // Update menu buttons to show stats instead
+      updateMenuButtons();
       document.getElementById('saveModal').classList.add('open');
     }catch(e){showToast('Something went wrong. Try again!');}
   },200);
@@ -653,6 +686,7 @@ function preloadFlags(){
   });
 }
 preloadFlags();
+updateMenuButtons();
 
 /* ── GOOGLE SHEETS INTEGRATION ── */
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyA_B05hDbgYhZFHfS1LVF_xuBRoAdK2RLv74yL3PsDT6kGZ0lhtfmjN2zSjK-qB__4iw/exec';
