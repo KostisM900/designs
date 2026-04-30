@@ -83,6 +83,9 @@ html,body{
 .menu-btn:active{opacity:0.72;}
 .menu-btn-1{background:linear-gradient(90deg,#ff03ff,#8800ff);color:#fff;}
 .menu-btn-2{background:linear-gradient(90deg,#8800ff,#ff03ff);color:#fff;}
+.menu-btn-stats{background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.85);}
+.menu-btn-icon{font-size:16px;opacity:0.6;}
+.stats-divider{text-align:center;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin:4px 0 2px;}
 .menu-btn-num{background:rgba(255,255,255,0.22);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0;}
 
 .countdowns-wrap{display:flex;flex-direction:column;gap:10px;width:100%;margin-bottom:22px;}
@@ -252,6 +255,14 @@ html,body{
         </div>
         <button class="menu-btn menu-btn-2" onclick="openSemi(2)">
           <span>2nd Semi-Final</span><span class="menu-btn-num">2</span>
+        </button>
+
+        <div class="stats-divider">— Community Predictions —</div>
+        <button class="menu-btn menu-btn-stats" onclick="openStatsFromMenu(1)">
+          <span>📊 SF1 Community Stats</span><span class="menu-btn-icon">→</span>
+        </button>
+        <button class="menu-btn menu-btn-stats" onclick="openStatsFromMenu(2)">
+          <span>📊 SF2 Community Stats</span><span class="menu-btn-icon">→</span>
         </button>
       </div>
 
@@ -679,12 +690,39 @@ function openStats() {
     });
 }
 
+function openStatsFromMenu(n) {
+  currentSemi = n;
+  const menu = document.getElementById('menuScreen');
+  const stats = document.getElementById('statsScreen');
+  document.getElementById('statsTitle').textContent = (n === 1 ? '1st' : '2nd') + ' Semi-Final Stats';
+  document.getElementById('statsSubtitle').textContent = 'Based on all community predictions';
+  document.getElementById('statsBody').innerHTML = '<div class="stats-loading"><div class="stats-spinner"></div>Loading data…</div>';
+
+  menu.classList.add('slide-out');
+  menu.classList.remove('active');
+  requestAnimationFrame(() => requestAnimationFrame(() => stats.classList.add('active')));
+
+  fetch(SCRIPT_URL + '?semi=' + n)
+    .then(r => r.json())
+    .then(data => renderStats(data))
+    .catch(() => {
+      document.getElementById('statsBody').innerHTML = '<div class="stats-loading">Could not load data.<br>Try again later.</div>';
+    });
+}
+
 function goBackFromStats() {
+  const menu = document.getElementById('menuScreen');
   const picker = document.getElementById('pickerScreen');
   const stats = document.getElementById('statsScreen');
   stats.classList.remove('active');
-  picker.classList.remove('slide-out');
-  picker.classList.add('active');
+  // If picker is slide-out we came from picker, else from menu
+  if(picker.classList.contains('slide-out')){
+    picker.classList.remove('slide-out');
+    picker.classList.add('active');
+  } else {
+    menu.classList.remove('slide-out');
+    menu.classList.add('active');
+  }
 }
 
 function renderStats(data) {
