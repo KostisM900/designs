@@ -691,8 +691,8 @@ function drawFull(ctx,W,H,evfImg,escImg,chosen){
   ctx.fillText('Eurovision Song Contest 2026 · Vienna',W/2,footY+88);
   ctx.restore();
 
-  // Submit to Google Sheets
-  submitToSheets(currentSemi, chosen);
+  // Submit to Supabase
+  submitToSupabase(currentSemi, chosen);
 
   // Always show modal — works on all browsers including Instagram/TikTok in-app
   setTimeout(()=>{
@@ -723,38 +723,62 @@ function preloadFlags(){
 preloadFlags();
 updateMenuButtons();
 
-/* ── GOOGLE SHEETS INTEGRATION ── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyA_B05hDbgYhZFHfS1LVF_xuBRoAdK2RLv74yL3PsDT6kGZ0lhtfmjN2zSjK-qB__4iw/exec';
+/* ── SUPABASE INTEGRATION ── */
+const SUPABASE_URL = 'https://ihsejygibhnwmbubyzdi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imloc2VqeWdpYmhud21idWJ5emRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NDg3NjEsImV4cCI6MjA5MzIyNDc2MX0.8XEncQSf-r27ahNj9pYywmVK5gKNjnnLLyUrMYfXEFE';
 
-function submitToSheets(semi, countries) {
-  // Generate a unique device ID and store it
+function submitToSupabase(semi, countries) {
   let deviceId = localStorage.getItem('evf_device_id');
   if (!deviceId) {
     deviceId = 'dev_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
     localStorage.setItem('evf_device_id', deviceId);
   }
 
-  // Check if this device already submitted for this semi-final
   const submitKey = 'evf_submitted_sf' + semi;
-  if (localStorage.getItem(submitKey)) {
-    return; // Already submitted — skip silently
-  }
+  if (localStorage.getItem(submitKey)) return;
 
-  // Save picks locally so user can see them again
+  // Save picks locally
   localStorage.setItem('evf_picks_sf' + semi, JSON.stringify(countries.map(c => c.name)));
-
-  // Mark as submitted before sending
   localStorage.setItem(submitKey, '1');
 
-  fetch(SCRIPT_URL, {
+  fetch(SUPABASE_URL + '/rest/v1/predictions', {
     method: 'POST',
-    mode: 'no-cors',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({semi: String(semi), countries: countries.map(c => c.name), deviceId})
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({
+      semi: semi,
+      countries: countries.map(c => c.name).join(','),
+      device_id: deviceId
+    })
   }).catch(() => {
-    // If failed, remove the flag so they can retry
     localStorage.removeItem(submitKey);
   });
+}
+
+async function fetchStats(semi) {
+  const res = await fetch(
+    SUPABASE_URL + '/rest/v1/predictions?select=countries&semi=eq.' + semi,
+    {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY
+      }
+    }
+  );
+  const rows = await res.json();
+  const counts = {};
+  const total = rows.length;
+  rows.forEach(row => {
+    (row.countries || '').split(',').forEach(c => {
+      const name = c.trim();
+      if (name) counts[name] = (counts[name] || 0) + 1;
+    });
+  });
+  return { counts, total };
 }
 
 function closeSaveModal() {
@@ -772,9 +796,7 @@ function openStats() {
   picker.classList.remove('active');
   requestAnimationFrame(() => requestAnimationFrame(() => stats.classList.add('active')));
 
-  // Fetch stats
-  fetch(SCRIPT_URL + '?semi=' + currentSemi)
-    .then(r => r.json())
+  fetchStats(currentSemi)
     .then(data => renderStats(data))
     .catch(() => {
       document.getElementById('statsBody').innerHTML = '<div class="stats-loading">Could not load data.<br>Try again later.</div>';
@@ -793,8 +815,7 @@ function openStatsFromMenu(n) {
   menu.classList.remove('active');
   requestAnimationFrame(() => requestAnimationFrame(() => stats.classList.add('active')));
 
-  fetch(SCRIPT_URL + '?semi=' + n)
-    .then(r => r.json())
+  fetchStats(n)
     .then(data => renderStats(data))
     .catch(() => {
       document.getElementById('statsBody').innerHTML = '<div class="stats-loading">Could not load data.<br>Try again later.</div>';
