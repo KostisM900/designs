@@ -209,6 +209,18 @@ html,body{
   .cname{font-size:13px;}
   .cartist{font-size:11px;}
 }
+/* ── AGREEMENT CARD ── */
+.agreement-card{background:rgba(255,3,255,0.08);border:1.5px solid rgba(255,3,255,0.25);border-radius:14px;padding:14px 16px;margin-bottom:16px;}
+.agreement-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.agreement-emoji{font-size:28px;flex-shrink:0;}
+.agreement-title{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.5);}
+.agreement-label{font-size:13px;font-weight:700;color:#fff;margin-top:2px;}
+.agreement-pct{margin-left:auto;font-size:28px;font-weight:900;color:#ff03ff;flex-shrink:0;letter-spacing:-1px;}
+.agreement-bar-wrap{height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;margin-bottom:8px;}
+.agreement-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,#ff03ff,#8800ff);width:0%;transition:width 0.9s cubic-bezier(0.4,0,0.2,1);}
+.agreement-sub{font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:0.2px;}
+.my-pick-dot{color:#ff03ff;font-size:10px;margin-left:3px;vertical-align:middle;}
+.stats-legend{font-size:10px;font-weight:600;color:rgba(255,255,255,0.3);text-align:center;margin-top:12px;letter-spacing:0.5px;}
 </style>
 </head>
 <body>
@@ -817,34 +829,68 @@ function renderStats(data) {
   const sorted = [...countries].sort((a, b) => (counts[b.name] || 0) - (counts[a.name] || 0));
   const max = counts[sorted[0].name] || 1;
 
-  let html = `<div class="stats-total">${total} prediction${total !== 1 ? 's' : ''} submitted</div>`;
+  // Agreement score — compare user's picks vs community top 10
+  const myPicks = JSON.parse(localStorage.getItem('evf_picks_sf' + currentSemi) || '[]');
+  const communityTop10 = sorted.slice(0, 10).map(c => c.name);
+  let agreementHtml = '';
+  if (myPicks.length > 0) {
+    const matches = myPicks.filter(p => communityTop10.includes(p)).length;
+    const agreePct = Math.round((matches / 10) * 100);
+    const emoji = agreePct >= 80 ? '🔥' : agreePct >= 60 ? '👏' : agreePct >= 40 ? '🤔' : '😅';
+    const label = agreePct >= 80 ? 'You\'re aligned with the crowd!' : agreePct >= 60 ? 'Pretty close to the community!' : agreePct >= 40 ? 'You see it differently' : 'Bold & unique predictions!';
+    agreementHtml = `
+      <div class="agreement-card">
+        <div class="agreement-top">
+          <span class="agreement-emoji">${emoji}</span>
+          <div>
+            <div class="agreement-title">Your Agreement Score</div>
+            <div class="agreement-label">${label}</div>
+          </div>
+          <div class="agreement-pct">${agreePct}%</div>
+        </div>
+        <div class="agreement-bar-wrap">
+          <div class="agreement-bar" data-w="${agreePct}"></div>
+        </div>
+        <div class="agreement-sub">${matches} of your ${myPicks.length} picks match the community's top 10</div>
+      </div>`;
+  }
+
+  let html = agreementHtml + `<div class="stats-total">${total} prediction${total !== 1 ? 's' : ''} submitted</div>`;
 
   sorted.forEach((c, i) => {
     const cnt = counts[c.name] || 0;
     const pct = Math.round((cnt / total) * 100);
     const barW = Math.round((cnt / max) * 100);
-    // Top 10 get a bright bar, rest dimmed
+    const isMyPick = myPicks.includes(c.name);
     const barStyle = i < 10
       ? 'background:linear-gradient(90deg,#ff03ff,#8800ff);'
       : 'background:rgba(255,255,255,0.15);';
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+    const myDot = isMyPick ? '<span class="my-pick-dot" title="Your pick">★</span>' : '';
 
     html += `
       <div class="stats-row">
         <div class="stats-flag"><img src="${flagUrl(c.cc)}" alt="${c.name}"></div>
-        <div class="stats-name">${medal}${c.name}</div>
+        <div class="stats-name">${medal}${c.name}${myDot}</div>
         <div class="stats-bar-wrap"><div class="stats-bar" style="width:0%;${barStyle}" data-w="${barW}"></div></div>
         <div class="stats-pct">${pct}%</div>
       </div>`;
   });
 
+  // Legend if user has picks
+  if (myPicks.length > 0) {
+    html += `<div class="stats-legend">★ Your pick</div>`;
+  }
+
   document.getElementById('statsBody').innerHTML = html;
 
   // Animate bars in
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    document.querySelectorAll('.stats-bar').forEach(bar => {
+    document.querySelectorAll('.stats-bar[data-w]').forEach(bar => {
       bar.style.width = bar.dataset.w + '%';
     });
+    const ab = document.querySelector('.agreement-bar[data-w]');
+    if (ab) ab.style.width = ab.dataset.w + '%';
   }));
 }
 </script>
