@@ -234,7 +234,7 @@ html,body{
   <div class="screen active" id="menuScreen" style="transform:translateX(0);opacity:1;pointer-events:auto;">
     <div class="menu-inner">
       <div class="logo-stack">
-        <img src="https://i.imgur.com/aGci65i.png" class="evf-logo" alt="EurovisionFun" onerror="this.style.visibility='hidden'">
+        <img src="https://i.imgur.com/CVmtmbz.png" class="evf-logo" alt="EurovisionFun" onerror="this.style.visibility='hidden'">
         <img src="https://i.imgur.com/I0l4jby.png" class="esc-logo" alt="Eurovision Song Contest Vienna 2026" onerror="this.style.visibility='hidden'">
       </div>
       <div class="menu-title-block">
@@ -263,7 +263,7 @@ html,body{
       <div class="menu-btns">
         <div class="cd-card" style="margin-bottom:10px;">
           <div class="cd-label cd-label-1"><span class="cd-dot cd-dot-1"></span>1st Semi-Final</div>
-          <div class="cd-date">Tuesday 13 May 2026 · 22:00 Athens time</div>
+          <div class="cd-date">Tuesday 12 May 2026 · 22:00 Athens time</div>
           <div id="cd1-wrap"></div>
         </div>
         <button class="menu-btn menu-btn-1" id="btn-sf1" onclick="handleSemiBtn(1)">
@@ -303,7 +303,7 @@ html,body{
         <h2 id="pickerTitle">1st Semi-Final</h2>
         <p id="pickerSub">Tap to select your qualifiers</p>
       </div>
-      <img src="https://i.imgur.com/aGci65i.png" class="evf-top" alt="EurovisionFun" onerror="this.style.visibility='hidden'">
+      <img src="https://i.imgur.com/CVmtmbz.png" class="evf-top" alt="EurovisionFun" onerror="this.style.visibility='hidden'">
     </div>
     <div class="counter-strip">
       <span class="counter-label">Selected</span>
@@ -328,7 +328,7 @@ html,body{
         <h2 id="statsTitle">Community Predictions</h2>
         <p id="statsSubtitle">What everyone thinks will qualify</p>
       </div>
-      <img src="https://i.imgur.com/aGci65i.png" class="evf-top" alt="EurovisionFun" onerror="this.style.visibility='hidden'">
+      <img src="https://i.imgur.com/CVmtmbz.png" class="evf-top" alt="EurovisionFun" onerror="this.style.visibility='hidden'">
     </div>
     <div class="stats-body" id="statsBody">
       <div class="stats-loading"><div class="stats-spinner"></div>Loading data…</div>
@@ -584,7 +584,7 @@ function generateCard(){
   const tryDraw=()=>{if(++done<2)return;drawFull(ctx,W,H,evfImg,escImg,chosen);};
   evfImg.onload=evfImg.onerror=tryDraw;
   escImg.onload=escImg.onerror=tryDraw;
-  evfImg.src='https://i.imgur.com/aGci65i.png';
+  evfImg.src='https://i.imgur.com/CVmtmbz.png';
   escImg.src='https://i.imgur.com/I0l4jby.png';
 }
 
@@ -819,156 +819,213 @@ function drawCommunityCanvas(top10, counts, total) {
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // Background — distinct purple/teal gradient for community
-  const grd = ctx.createLinearGradient(0, 0, 0, H);
-  grd.addColorStop(0, '#0a0020');
-  grd.addColorStop(0.5, '#150040');
-  grd.addColorStop(1, '#0d001f');
-  ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
+  // Deep dark background
+  ctx.fillStyle = '#06000f'; ctx.fillRect(0, 0, W, H);
 
-  // Accent radials
-  const r1 = ctx.createRadialGradient(W*.2, H*.1, 0, W*.2, H*.1, 700);
-  r1.addColorStop(0, 'rgba(168,85,247,0.2)'); r1.addColorStop(1, 'transparent');
-  ctx.fillStyle = r1; ctx.fillRect(0, 0, W, H);
-  const r2 = ctx.createRadialGradient(W*.85, H*.85, 0, W*.85, H*.85, 700);
-  r2.addColorStop(0, 'rgba(255,3,255,0.15)'); r2.addColorStop(1, 'transparent');
-  ctx.fillStyle = r2; ctx.fillRect(0, 0, W, H);
+  // Diagonal colour bands
+  const band1 = ctx.createLinearGradient(0, 0, W, H*0.55);
+  band1.addColorStop(0, 'rgba(120,0,220,0.35)');
+  band1.addColorStop(1, 'transparent');
+  ctx.fillStyle = band1; ctx.fillRect(0, 0, W, H);
 
-  const evfImg = new Image(), escImg = new Image();
-  evfImg.crossOrigin = 'anonymous'; escImg.crossOrigin = 'anonymous';
-  let done = 0;
-  const tryDraw = () => {
-    if (++done < 2) return;
+  const band2 = ctx.createLinearGradient(W, H, 0, H*0.5);
+  band2.addColorStop(0, 'rgba(255,3,255,0.18)');
+  band2.addColorStop(1, 'transparent');
+  ctx.fillStyle = band2; ctx.fillRect(0, 0, W, H);
 
-    const PAD = 60;
+  // Glow orbs
+  [[W*0.15,H*0.08,500,'rgba(140,0,255,0.22)'],[W*0.9,H*0.45,400,'rgba(255,3,255,0.14)'],[W*0.5,H*0.95,600,'rgba(100,0,200,0.18)']].forEach(([cx,cy,r,col])=>{
+    const rg=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+    rg.addColorStop(0,col);rg.addColorStop(1,'transparent');
+    ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+  });
+
+  const evfImg=new Image(), escImg=new Image();
+  evfImg.crossOrigin='anonymous'; escImg.crossOrigin='anonymous';
+  let done=0;
+  const tryDraw=()=>{
+    if(++done<2)return;
+    const PAD=56;
     ctx.save();
 
-    // Logos
-    try { const ew = evfImg.naturalWidth*(110/evfImg.naturalHeight)||320; ctx.drawImage(evfImg, W/2-ew/2, 70, ew, 110); } catch(e){}
-    try { const esw = escImg.naturalWidth*(90/escImg.naturalHeight)||240; ctx.drawImage(escImg, W/2-esw/2, 200, esw, 90); } catch(e){}
+    // ── TOP SECTION ──
+    // EVF logo (new)
+    const evfH=100;
+    try{
+      const ew=evfImg.naturalWidth>0?evfImg.naturalWidth*(evfH/evfImg.naturalHeight):380;
+      ctx.drawImage(evfImg,W/2-ew/2,60,ew,evfH);
+    }catch(e){}
 
-    // "COMMUNITY PREDICTIONS" pill — purple/teal gradient
-    const pillY = 330, pillH = 90;
-    const pillG = ctx.createLinearGradient(PAD,0,W-PAD,0);
-    pillG.addColorStop(0,'#a855f7'); pillG.addColorStop(1,'#ff03ff');
-    ctx.fillStyle = pillG; rr(ctx, PAD, pillY, W-PAD*2, pillH, 45); ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 38px Montserrat,Arial,sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('COMMUNITY TOP 10 QUALIFIERS', W/2, pillY+pillH/2);
+    // Eurovision logo
+    const escH=80;
+    try{
+      const esw=escImg.naturalWidth>0?escImg.naturalWidth*(escH/escImg.naturalHeight):220;
+      ctx.drawImage(escImg,W/2-esw/2,178,esw,escH);
+    }catch(e){}
 
-    // Submission count badge
-    const badgeY = pillY + pillH + 20;
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-    rr(ctx, W/2-140, badgeY, 280, 52, 26); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.font = '600 24px Montserrat,Arial,sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(`Based on ${total.toLocaleString()} prediction${total!==1?'s':''}`, W/2, badgeY+26);
+    // "COMMUNITY VOTE" label above title
+    ctx.fillStyle='rgba(168,85,247,0.9)';
+    ctx.font='800 26px Montserrat,Arial,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.letterSpacing='4px';
+    ctx.fillText('▸ COMMUNITY VOTE ◂', W/2, 298);
 
-    // Card
-    const cardY = badgeY + 72;
-    const maxCount = counts[top10[0].name] || 1;
-    const rowH = 136;
-    const cardH = top10.length * rowH + 40;
+    // Big title block
+    ctx.fillStyle='#fff';
+    ctx.font='900 72px Montserrat,Arial,sans-serif';
+    ctx.fillText('TOP 10', W/2, 372);
 
-    ctx.fillStyle = 'rgba(255,255,255,0.04)';
-    ctx.strokeStyle = 'rgba(168,85,247,0.3)'; ctx.lineWidth = 2;
-    rr(ctx, PAD, cardY, W-PAD*2, cardH, 24); ctx.fill(); ctx.stroke();
+    ctx.font='900 42px Montserrat,Arial,sans-serif';
+    ctx.fillStyle='rgba(255,255,255,0.55)';
+    ctx.fillText('PREDICTED QUALIFIERS', W/2, 428);
 
-    const listY = cardY + 20;
-    const medals = ['🥇','🥈','🥉'];
+    // Semi label pill
+    const semiLabel=(currentSemi===1?'1ST':'2ND')+' SEMI-FINAL';
+    const pillW=340, pillH=54, pillX=W/2-pillW/2, pillY=460;
+    const pillG=ctx.createLinearGradient(pillX,0,pillX+pillW,0);
+    pillG.addColorStop(0,'#7c00ff');pillG.addColorStop(1,'#ff03ff');
+    ctx.fillStyle=pillG; rr(ctx,pillX,pillY,pillW,pillH,27); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='800 24px Montserrat,Arial,sans-serif';
+    ctx.fillText(semiLabel, W/2, pillY+pillH/2);
 
-    top10.forEach((c, i) => {
-      const ry = listY + i * rowH;
-      const rowCY = ry + rowH/2;
-      const cnt = counts[c.name] || 0;
-      const pct = Math.round((cnt / total) * 100);
-      const barFill = Math.round((cnt / maxCount) * 100);
+    // Submission count
+    ctx.fillStyle='rgba(255,255,255,0.35)';
+    ctx.font='600 24px Montserrat,Arial,sans-serif';
+    ctx.fillText(`Based on ${total.toLocaleString()} prediction${total!==1?'s':''}`, W/2, 550);
 
-      // Alternating row bg
-      if (i % 2 === 0) {
-        ctx.fillStyle = 'rgba(168,85,247,0.06)';
-        rr(ctx, PAD+10, ry+4, W-PAD*2-20, rowH-8, 12); ctx.fill();
+    // Divider line
+    const divG=ctx.createLinearGradient(PAD,0,W-PAD,0);
+    divG.addColorStop(0,'transparent');
+    divG.addColorStop(0.3,'rgba(168,85,247,0.6)');
+    divG.addColorStop(0.7,'rgba(255,3,255,0.6)');
+    divG.addColorStop(1,'transparent');
+    ctx.fillStyle=divG; ctx.fillRect(PAD,578,W-PAD*2,2);
+
+    // ── COUNTRIES LIST ──
+    const listTop=606;
+    const listBottom=H-170; // leave space for footer
+    const availH=listBottom-listTop;
+    const rowH=Math.floor(availH/10); // 10 rows always
+    const maxCount=counts[top10[0]?.name]||1;
+    const medals=['🥇','🥈','🥉'];
+
+    top10.forEach((c,i)=>{
+      const ry=listTop+i*rowH;
+      const rowCY=ry+rowH/2;
+      const cnt=counts[c.name]||0;
+      const pct=Math.round((cnt/total)*100);
+      const barFill=cnt/maxCount;
+
+      // Row background — alternating
+      if(i%2===0){
+        ctx.fillStyle='rgba(255,255,255,0.03)';
+        rr(ctx,PAD,ry+3,W-PAD*2,rowH-6,10); ctx.fill();
       }
 
-      // Medal / number
-      ctx.font = 'bold 34px Montserrat,Arial,sans-serif';
-      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      if (i < 3) {
-        ctx.font = '34px serif';
-        ctx.fillText(medals[i], PAD+18, rowCY);
+      // Left: rank number or medal
+      const rankW=70;
+      if(i<3){
+        ctx.font=`${Math.round(rowH*0.38)}px serif`;
+        ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText(medals[i],PAD+rankW/2,rowCY+2);
       } else {
-        ctx.fillStyle = 'rgba(255,255,255,0.35)';
-        ctx.font = 'bold 26px Montserrat,Arial,sans-serif';
-        ctx.fillText((i+1)+'.', PAD+18, rowCY);
+        ctx.fillStyle='rgba(255,255,255,0.25)';
+        ctx.font=`800 ${Math.round(rowH*0.28)}px Montserrat,Arial,sans-serif`;
+        ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText(i+1,PAD+rankW/2,rowCY);
       }
 
-      // Flag
-      const flagSize = 62, flagX = PAD + 80, flagY = rowCY - flagSize/2;
+      // Flag circle
+      const flagR=Math.round(rowH*0.33);
+      const flagCX=PAD+rankW+flagR+8;
       ctx.save();
-      ctx.beginPath(); ctx.arc(flagX+flagSize/2, rowCY, flagSize/2, 0, Math.PI*2); ctx.clip();
-      const fi = flagCache[c.cc];
-      if (fi && fi.naturalWidth > 0) ctx.drawImage(fi, flagX, flagY, flagSize, flagSize);
-      else { ctx.fillStyle='rgba(168,85,247,0.3)'; ctx.fill(); }
+      ctx.beginPath();ctx.arc(flagCX,rowCY,flagR,0,Math.PI*2);ctx.clip();
+      const fi=flagCache[c.cc];
+      if(fi&&fi.naturalWidth>0)ctx.drawImage(fi,flagCX-flagR,rowCY-flagR,flagR*2,flagR*2);
+      else{ctx.fillStyle='rgba(168,85,247,0.4)';ctx.fill();}
       ctx.restore();
-      ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.arc(flagX+flagSize/2, rowCY, flagSize/2, 0, Math.PI*2); ctx.stroke();
+      // Flag ring — gradient for top 3
+      if(i<3){
+        const ringG=ctx.createLinearGradient(flagCX-flagR,rowCY-flagR,flagCX+flagR,rowCY+flagR);
+        ringG.addColorStop(0,'#a855f7');ringG.addColorStop(1,'#ff03ff');
+        ctx.strokeStyle=ringG;
+      } else {
+        ctx.strokeStyle='rgba(255,255,255,0.15)';
+      }
+      ctx.lineWidth=3;
+      ctx.beginPath();ctx.arc(flagCX,rowCY,flagR,0,Math.PI*2);ctx.stroke();
+
+      // Text area
+      const textX=flagCX+flagR+18;
+      const pctW=110; // space for percent on right
+      const textMaxW=W-PAD-textX-pctW-10;
 
       // Country name
-      const textX = flagX + flagSize + 20;
-      const textMaxW = W - PAD - textX - 140;
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 32px Montserrat,Arial,sans-serif';
-      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.fillText(truncateText(ctx, c.name, textMaxW), textX, rowCY - 14);
+      const nameFontSize=Math.round(rowH*0.28);
+      ctx.fillStyle='#fff';
+      ctx.font=`800 ${nameFontSize}px Montserrat,Arial,sans-serif`;
+      ctx.textAlign='left';ctx.textBaseline='middle';
+      const nameY=rowH>120?rowCY-nameFontSize*0.45:rowCY-nameFontSize*0.25;
+      ctx.fillText(truncateText(ctx,c.name,textMaxW),textX,nameY);
 
-      // Progress bar
-      const barX = textX, barY = rowCY + 8, barW = textMaxW, barH2 = 12;
-      ctx.fillStyle = 'rgba(255,255,255,0.1)';
-      rr(ctx, barX, barY, barW, barH2, 6); ctx.fill();
-      const fillW = Math.max(8, barW * (barFill/100));
-      const barG = ctx.createLinearGradient(barX, 0, barX+fillW, 0);
-      barG.addColorStop(0, '#a855f7'); barG.addColorStop(1, '#ff03ff');
-      ctx.fillStyle = barG;
-      rr(ctx, barX, barY, fillW, barH2, 6); ctx.fill();
+      // Progress bar (only if rowH big enough)
+      if(rowH>=110){
+        const barY=nameY+nameFontSize*0.75;
+        const barH2=Math.round(rowH*0.1);
+        const barW=textMaxW;
+        ctx.fillStyle='rgba(255,255,255,0.08)';
+        rr(ctx,textX,barY,barW,barH2,barH2/2); ctx.fill();
+        const fillW=Math.max(barH2,barW*barFill);
+        const bG=ctx.createLinearGradient(textX,0,textX+fillW,0);
+        bG.addColorStop(0,'#7c00ff');bG.addColorStop(1,'#ff03ff');
+        ctx.fillStyle=bG;
+        rr(ctx,textX,barY,fillW,barH2,barH2/2); ctx.fill();
+      }
 
-      // Percent
-      ctx.fillStyle = '#a855f7';
-      ctx.font = 'bold 28px Montserrat,Arial,sans-serif';
-      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-      ctx.fillText(pct+'%', W-PAD-20, rowCY);
+      // Percent on right
+      const pctColor=i<3?'#ff03ff':'rgba(255,255,255,0.6)';
+      ctx.fillStyle=pctColor;
+      ctx.font=`900 ${Math.round(rowH*0.3)}px Montserrat,Arial,sans-serif`;
+      ctx.textAlign='right';ctx.textBaseline='middle';
+      ctx.fillText(pct+'%',W-PAD-8,rowCY);
     });
 
-    // Footer
-    const footY = cardY + cardH + 30;
-    ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(PAD, footY, W-PAD*2, 1);
+    // ── FOOTER BRANDING ──
+    const footY=H-160;
+    // Full-width gradient bar
+    const footG=ctx.createLinearGradient(0,0,W,0);
+    footG.addColorStop(0,'#5500cc');footG.addColorStop(0.5,'#aa00ff');footG.addColorStop(1,'#ff03ff');
+    ctx.fillStyle=footG; ctx.fillRect(0,footY,W,3);
 
-    // EVF branding bar
-    const brandG = ctx.createLinearGradient(PAD, 0, W-PAD, 0);
-    brandG.addColorStop(0,'#a855f7'); brandG.addColorStop(1,'#ff03ff');
-    ctx.fillStyle = brandG;
-    rr(ctx, PAD, footY+20, W-PAD*2, 70, 35); ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 30px Montserrat,Arial,sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('eurovisionfun.com · Eurovision 2026', W/2, footY+55);
+    // Footer background
+    ctx.fillStyle='rgba(255,255,255,0.04)'; ctx.fillRect(0,footY+3,W,H-footY-3);
+
+    // EVF logo small in footer
+    try{
+      const fh=56, fw=evfImg.naturalWidth>0?evfImg.naturalWidth*(fh/evfImg.naturalHeight):200;
+      ctx.drawImage(evfImg,W/2-fw/2,footY+18,fw,fh);
+    }catch(e){}
+
+    ctx.fillStyle='rgba(255,255,255,0.35)';
+    ctx.font='600 22px Montserrat,Arial,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('eurovisionfun.com · Eurovision Song Contest 2026',W/2,footY+96);
 
     ctx.restore();
 
-    setTimeout(() => {
-      try {
-        const dataUrl = document.getElementById('exportCanvas').toDataURL('image/png');
-        document.getElementById('communityModalImg').src = dataUrl;
+    setTimeout(()=>{
+      try{
+        const dataUrl=document.getElementById('exportCanvas').toDataURL('image/png');
+        document.getElementById('communityModalImg').src=dataUrl;
         document.getElementById('communityModal').classList.add('open');
-      } catch(e) { showToast('Something went wrong!'); }
-    }, 200);
+      }catch(e){showToast('Something went wrong!');}
+    },200);
   };
 
-  evfImg.onload = evfImg.onerror = tryDraw;
-  escImg.onload = escImg.onerror = tryDraw;
-  evfImg.src = 'https://i.imgur.com/aGci65i.png';
-  escImg.src = 'https://i.imgur.com/I0l4jby.png';
+  evfImg.onload=evfImg.onerror=tryDraw;
+  escImg.onload=escImg.onerror=tryDraw;
+  evfImg.src='https://i.imgur.com/CVmtmbz.png';
+  escImg.src='https://i.imgur.com/I0l4jby.png';
 }
 
 function closeSaveModal() {
