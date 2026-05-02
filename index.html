@@ -595,95 +595,98 @@ function generateCard(){
 
 function drawFull(ctx,W,H,evfImg,escImg,chosen){
   ctx.save();
-  const PAD=60; // side padding
+  const PAD=60;
 
-  // Logos
-  const evfH=76;
-  try{const ew=evfImg.naturalWidth?evfImg.naturalWidth*(evfH/evfImg.naturalHeight):285;ctx.drawImage(evfImg,W/2-ew/2,62,ew,evfH);}catch(e){}
-  const escH=82;
-  try{const esw=escImg.naturalWidth?escImg.naturalWidth*(escH/escImg.naturalHeight):220;ctx.drawImage(escImg,W/2-esw/2,152,esw,escH);}catch(e){}
+  // ── LOGOS SIDE BY SIDE ──
+  // EVF logo left, ESC logo right, both vertically centered in header
+  const logoH=88;
+  const logoY=56;
+  const centerX=W/2;
+  const gap=30; // gap between logos
 
-  // Title pill
-  const pillY=330;const pillH=90;
+  // EVF on the left half
+  try{
+    const ew=evfImg.naturalWidth?evfImg.naturalWidth*(logoH/evfImg.naturalHeight):330;
+    ctx.drawImage(evfImg, centerX - gap/2 - ew, logoY, ew, logoH);
+  }catch(e){}
+  // ESC on the right half
+  try{
+    const esw=escImg.naturalWidth?escImg.naturalWidth*(logoH/escImg.naturalHeight):220;
+    ctx.drawImage(escImg, centerX + gap/2, logoY, esw, logoH);
+  }catch(e){}
+
+  // Thin divider line between logos
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.fillRect(centerX-1, logoY+10, 2, logoH-20);
+
+  // ── TITLE PILL ──
+  const pillY=168; const pillH=88;
   const btnG=ctx.createLinearGradient(PAD,0,W-PAD,0);
   btnG.addColorStop(0,'#ff03ff');btnG.addColorStop(1,'#6c00ff');
-  ctx.fillStyle=btnG;rr(ctx,PAD,pillY,W-PAD*2,pillH,45);ctx.fill();
-  ctx.fillStyle='#fff';ctx.font='bold 44px Montserrat,Arial,sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle=btnG; rr(ctx,PAD,pillY,W-PAD*2,pillH,44); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 44px Montserrat,Arial,sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText((currentSemi===1?'1ST':'2ND')+' SEMI-FINAL QUALIFIERS',W/2,pillY+pillH/2);
 
-  // Dynamic row height based on count — fit within canvas
-  // Available space: from cardY to footer area
-  const cardY=460;
-  const footerH=130; // space at bottom for footer text
-  const headerRowH=52; // "MY PREDICTIONS" label
-  const availH=H-cardY-footerH-headerRowH-40;
-  // Each row needs: country name + artist+song line + spacing
+  // ── CARD ── starts right after pill with small gap
+  const cardY=pillY+pillH+24;
+  const footerH=110;
+  const headerRowH=50;
+  const availH=H-cardY-footerH-headerRowH-32;
   const n=chosen.length;
-  const rowH=Math.min(150,Math.max(100,Math.floor(availH/n)));
-  const cardH=n*rowH+headerRowH+24;
+  const rowH=Math.min(148,Math.max(96,Math.floor(availH/n)));
+  const cardH=n*rowH+headerRowH+20;
 
-  // Card background
   ctx.fillStyle='rgba(255,255,255,0.05)';
-  ctx.strokeStyle='rgba(255,3,255,0.2)';ctx.lineWidth=2;
-  rr(ctx,PAD,cardY,W-PAD*2,cardH,24);ctx.fill();ctx.stroke();
+  ctx.strokeStyle='rgba(255,3,255,0.2)'; ctx.lineWidth=2;
+  rr(ctx,PAD,cardY,W-PAD*2,cardH,24); ctx.fill(); ctx.stroke();
 
   // Card label
   ctx.fillStyle='rgba(255,255,255,0.35)';
   ctx.font='700 26px Montserrat,Arial,sans-serif';
-  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
   ctx.fillText('MY PREDICTIONS ('+n+'/10)',PAD+40,cardY+headerRowH);
 
   // Rows
-  const listY=cardY+headerRowH+16;
-  const innerW=W-PAD*2-20; // card inner width
+  const listY=cardY+headerRowH+14;
 
   chosen.forEach((c,i)=>{
     const ry=listY+i*rowH;
     const rowCenterY=ry+rowH/2;
 
-    // Alternating row background
     if(i%2===0){
       ctx.fillStyle='rgba(255,255,255,0.04)';
-      rr(ctx,PAD+10,ry+4,W-PAD*2-20,rowH-8,12);ctx.fill();
+      rr(ctx,PAD+10,ry+4,W-PAD*2-20,rowH-8,12); ctx.fill();
     }
 
     // Index number
     ctx.fillStyle='#ff03ff';
     ctx.font=`bold ${Math.round(rowH*0.24)}px Montserrat,Arial,sans-serif`;
-    ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.textAlign='left'; ctx.textBaseline='middle';
     ctx.fillText((i+1)+'.',PAD+24,rowCenterY);
 
-    // Flag circle
+    // Flag
     const flagSize=Math.round(rowH*0.52);
     const flagX=PAD+80;
     const flagY=rowCenterY-flagSize/2;
     ctx.save();
-    ctx.beginPath();ctx.arc(flagX+flagSize/2,rowCenterY,flagSize/2,0,Math.PI*2);ctx.clip();
-    // Flag image
+    ctx.beginPath(); ctx.arc(flagX+flagSize/2,rowCenterY,flagSize/2,0,Math.PI*2); ctx.clip();
     const flagImg=flagCache[c.cc];
-    if(flagImg&&flagImg.naturalWidth>0){
-      ctx.drawImage(flagImg,flagX,flagY,flagSize,flagSize);
-    } else {
-      ctx.fillStyle='rgba(255,3,255,0.25)';ctx.fill();
-    }
+    if(flagImg&&flagImg.naturalWidth>0){ ctx.drawImage(flagImg,flagX,flagY,flagSize,flagSize); }
+    else{ ctx.fillStyle='rgba(255,3,255,0.25)'; ctx.fill(); }
     ctx.restore();
-    // Flag border
-    ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(flagX+flagSize/2,rowCenterY,flagSize/2,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(flagX+flagSize/2,rowCenterY,flagSize/2,0,Math.PI*2); ctx.stroke();
 
-    // Text area
+    // Text
     const textX=flagX+flagSize+22;
-    const textMaxW=W-PAD-textX-70; // leave room for checkmark
-
-    // Country name
+    const textMaxW=W-PAD-textX-70;
     const nameFontSize=Math.round(rowH*0.26);
     ctx.font=`bold ${nameFontSize}px Montserrat,Arial,sans-serif`;
-    ctx.fillStyle='#fff';ctx.textAlign='left';
+    ctx.fillStyle='#fff'; ctx.textAlign='left';
     const nameY=rowH>=130?rowCenterY-nameFontSize*0.55:rowCenterY-nameFontSize*0.3;
     ctx.fillText(truncateText(ctx,c.name,textMaxW),textX,nameY);
 
-    // Artist · Song line
     const subFontSize=Math.round(rowH*0.185);
     ctx.font=`600 ${subFontSize}px Montserrat,Arial,sans-serif`;
     ctx.fillStyle='rgba(255,180,255,0.75)';
@@ -691,24 +694,24 @@ function drawFull(ctx,W,H,evfImg,escImg,chosen){
     const subY=rowH>=130?rowCenterY+subFontSize*0.8:rowCenterY+subFontSize*1.0;
     ctx.fillText(truncateText(ctx,subText,textMaxW),textX,subY);
 
-    // Checkmark circle
+    // Checkmark
     const ckR=Math.round(rowH*0.22);
     const ckX=W-PAD-ckR-20;
-    ctx.fillStyle='#ff03ff';ctx.beginPath();ctx.arc(ckX,rowCenterY,ckR,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ff03ff'; ctx.beginPath(); ctx.arc(ckX,rowCenterY,ckR,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#fff';
     ctx.font=`bold ${Math.round(ckR*1.3)}px Montserrat,Arial,sans-serif`;
-    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('✓',ckX,rowCenterY+2);
   });
 
   // Footer
-  const footY=cardY+cardH+36;
-  ctx.fillStyle='rgba(255,255,255,0.1)';ctx.fillRect(PAD,footY,W-PAD*2,1);
+  const footY=cardY+cardH+28;
+  ctx.fillStyle='rgba(255,255,255,0.1)'; ctx.fillRect(PAD,footY,W-PAD*2,1);
   ctx.fillStyle='rgba(255,255,255,0.35)';
-  ctx.font='700 28px Montserrat,Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('STAY UPDATED @ EUROVISIONFUN.COM',W/2,footY+50);
-  ctx.fillStyle='rgba(255,255,255,0.18)';ctx.font='500 22px Montserrat,Arial,sans-serif';
-  ctx.fillText('Eurovision Song Contest 2026 · Vienna',W/2,footY+88);
+  ctx.font='700 28px Montserrat,Arial,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('STAY UPDATED @ EUROVISIONFUN.COM',W/2,footY+44);
+  ctx.fillStyle='rgba(255,255,255,0.18)'; ctx.font='500 22px Montserrat,Arial,sans-serif';
+  ctx.fillText('Eurovision Song Contest 2026 · Vienna',W/2,footY+80);
   ctx.restore();
 
   // Submit to Supabase
@@ -858,39 +861,37 @@ function drawCommunityCanvas(top10, counts, total) {
     const PAD=56;
     ctx.save();
 
-    // ── TOP SECTION ──
-    // EVF logo (smaller)
-    const evfH=72;
+    // ── LOGOS SIDE BY SIDE ──
+    const logoH=80, logoY=50, centerX=W/2, gap=28;
     try{
-      const ew=evfImg.naturalWidth>0?evfImg.naturalWidth*(evfH/evfImg.naturalHeight):270;
-      ctx.drawImage(evfImg,W/2-ew/2,55,ew,evfH);
+      const ew=evfImg.naturalWidth>0?evfImg.naturalWidth*(logoH/evfImg.naturalHeight):300;
+      ctx.drawImage(evfImg, centerX-gap/2-ew, logoY, ew, logoH);
     }catch(e){}
-
-    // Eurovision logo
-    const escH=72;
     try{
-      const esw=escImg.naturalWidth>0?escImg.naturalWidth*(escH/escImg.naturalHeight):200;
-      ctx.drawImage(escImg,W/2-esw/2,140,esw,escH);
+      const esw=escImg.naturalWidth>0?escImg.naturalWidth*(logoH/escImg.naturalHeight):200;
+      ctx.drawImage(escImg, centerX+gap/2, logoY, esw, logoH);
     }catch(e){}
+    ctx.fillStyle='rgba(255,255,255,0.15)';
+    ctx.fillRect(centerX-1, logoY+10, 2, logoH-20);
 
     // "COMMUNITY VOTE" label
     ctx.fillStyle='rgba(168,85,247,0.9)';
     ctx.font='800 26px Montserrat,Arial,sans-serif';
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('▸ COMMUNITY VOTE ◂', W/2, 258);
+    ctx.fillText('▸ COMMUNITY VOTE ◂', W/2, 178);
 
     // Big title block
     ctx.fillStyle='#fff';
     ctx.font='900 72px Montserrat,Arial,sans-serif';
-    ctx.fillText('TOP 10', W/2, 330);
+    ctx.fillText('TOP 10', W/2, 248);
 
     ctx.font='900 40px Montserrat,Arial,sans-serif';
     ctx.fillStyle='rgba(255,255,255,0.55)';
-    ctx.fillText('PREDICTED QUALIFIERS', W/2, 384);
+    ctx.fillText('PREDICTED QUALIFIERS', W/2, 302);
 
     // Semi label pill
     const semiLabel=(currentSemi===1?'1ST':'2ND')+' SEMI-FINAL';
-    const pillW=340, pillH=52, pillX=W/2-pillW/2, pillY=414;
+    const pillW=340, pillH=52, pillX=W/2-pillW/2, pillY=332;
     const pillG=ctx.createLinearGradient(pillX,0,pillX+pillW,0);
     pillG.addColorStop(0,'#7c00ff');pillG.addColorStop(1,'#ff03ff');
     ctx.fillStyle=pillG; rr(ctx,pillX,pillY,pillW,pillH,26); ctx.fill();
@@ -900,7 +901,7 @@ function drawCommunityCanvas(top10, counts, total) {
     // Submission count
     ctx.fillStyle='rgba(255,255,255,0.35)';
     ctx.font='600 24px Montserrat,Arial,sans-serif';
-    ctx.fillText(`Based on ${total.toLocaleString()} prediction${total!==1?'s':''}`, W/2, 506);
+    ctx.fillText(`Based on ${total.toLocaleString()} prediction${total!==1?'s':''}`, W/2, 424);
 
     // Divider
     const divG=ctx.createLinearGradient(PAD,0,W-PAD,0);
@@ -908,10 +909,10 @@ function drawCommunityCanvas(top10, counts, total) {
     divG.addColorStop(0.3,'rgba(168,85,247,0.6)');
     divG.addColorStop(0.7,'rgba(255,3,255,0.6)');
     divG.addColorStop(1,'transparent');
-    ctx.fillStyle=divG; ctx.fillRect(PAD,530,W-PAD*2,2);
+    ctx.fillStyle=divG; ctx.fillRect(PAD,448,W-PAD*2,2);
 
     // ── COUNTRIES LIST ── fills remaining space, no footer
-    const listTop=548;
+    const listTop=462;
     const listBottom=H-40;
     const availH=listBottom-listTop;
     const rowH=Math.floor(availH/10);
