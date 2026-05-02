@@ -166,6 +166,8 @@ html,body{
 .save-btn{padding:13px;border-radius:40px;border:none;background:linear-gradient(90deg,#ff03ff,#6c00ff);color:#fff;font-family:inherit;font-weight:800;font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s ease;-webkit-tap-highlight-color:transparent;user-select:none;}
 .save-btn:active{opacity:0.75;}
 .stats-btn-picker{background:rgba(255,3,255,0.15);border:1.5px solid #ff03ff;}
+.submitted-actions{display:flex;gap:8px;width:100%;}
+.submitted-actions .save-btn{flex:1;font-size:11px;padding:12px 8px;}
 .save-hint{text-align:center;color:rgba(255,255,255,0.3);font-size:10px;font-weight:600;letter-spacing:0.3px;}
 .toast-bar{background:#ff03ff;color:#fff;text-align:center;padding:7px;font-size:11px;font-weight:800;letter-spacing:0.3px;opacity:0;transition:opacity 0.3s;border-radius:8px;margin:0 0 4px;flex-shrink:0;}
 .toast-bar.show{opacity:1;}
@@ -312,8 +314,11 @@ html,body{
     <div class="countries-list" id="countriesList"></div>
     <div class="bottom-actions">
       <div class="toast-bar" id="toastBar"></div>
-      <button class="save-btn" id="saveShareBtn" onclick="generateCard()">&#128247; Save &amp; Share My Predictions</button>
-      <button class="save-btn stats-btn-picker" id="statsPickerBtn" onclick="openStats()" style="display:none;">📊 See Community Stats</button>
+      <button class="save-btn" id="saveShareBtn" onclick="generateCard()">📷 Save &amp; Share My Predictions</button>
+      <div class="submitted-actions" id="submittedActions" style="display:none;">
+        <button class="save-btn" onclick="generateCard()">📷 Download My Predictions</button>
+        <button class="save-btn stats-btn-picker" onclick="openStats()">📊 Community Stats</button>
+      </div>
       <div class="save-hint" id="saveHint">Story-ready image for Instagram, X &amp; Facebook</div>
     </div>
   </div>
@@ -472,15 +477,15 @@ function openSemi(n){
 
   // Update bottom buttons based on submission state
   const saveBtn = document.getElementById('saveShareBtn');
-  const statsBtn = document.getElementById('statsPickerBtn');
+  const submittedActions = document.getElementById('submittedActions');
   const hint = document.getElementById('saveHint');
   if(submitted){
     saveBtn.style.display='none';
-    statsBtn.style.display='block';
-    hint.textContent='Your predictions are saved ✅ — tap to see how others voted';
+    submittedActions.style.display='flex';
+    hint.textContent='Your predictions are saved ✅ — download again or see community stats';
   } else {
     saveBtn.style.display='block';
-    statsBtn.style.display='none';
+    submittedActions.style.display='none';
     hint.textContent='Story-ready image for Instagram, X & Facebook';
   }
 
@@ -593,10 +598,10 @@ function drawFull(ctx,W,H,evfImg,escImg,chosen){
   const PAD=60; // side padding
 
   // Logos
-  const evfH=110;
-  try{const ew=evfImg.naturalWidth?evfImg.naturalWidth*(evfH/evfImg.naturalHeight):320;ctx.drawImage(evfImg,W/2-ew/2,70,ew,evfH);}catch(e){}
-  const escH=90;
-  try{const esw=escImg.naturalWidth?escImg.naturalWidth*(escH/escImg.naturalHeight):240;ctx.drawImage(escImg,W/2-esw/2,200,esw,escH);}catch(e){}
+  const evfH=76;
+  try{const ew=evfImg.naturalWidth?evfImg.naturalWidth*(evfH/evfImg.naturalHeight):285;ctx.drawImage(evfImg,W/2-ew/2,62,ew,evfH);}catch(e){}
+  const escH=82;
+  try{const esw=escImg.naturalWidth?escImg.naturalWidth*(escH/escImg.naturalHeight):220;ctx.drawImage(escImg,W/2-esw/2,152,esw,escH);}catch(e){}
 
   // Title pill
   const pillY=330;const pillH=90;
@@ -717,8 +722,13 @@ function drawFull(ctx,W,H,evfImg,escImg,chosen){
       // Show saved confirmation message
       const savedBadge = document.getElementById('saveModalSaved');
       savedBadge.style.display = 'block';
-      // Update menu buttons to show stats instead
-      updateMenuButtons();
+      // Update picker buttons too if picker was open
+      const saveBtn = document.getElementById('saveShareBtn');
+      const submittedActions = document.getElementById('submittedActions');
+      const hint = document.getElementById('saveHint');
+      if(saveBtn) saveBtn.style.display='none';
+      if(submittedActions) submittedActions.style.display='flex';
+      if(hint) hint.textContent='Your predictions are saved ✅ — download again or see community stats';
       document.getElementById('saveModal').classList.add('open');
     }catch(e){showToast('Something went wrong. Try again!');}
   },200);
@@ -849,65 +859,66 @@ function drawCommunityCanvas(top10, counts, total) {
     ctx.save();
 
     // ── TOP SECTION ──
-    // EVF logo (new)
-    const evfH=100;
+    // EVF logo (smaller)
+    const evfH=72;
     try{
-      const ew=evfImg.naturalWidth>0?evfImg.naturalWidth*(evfH/evfImg.naturalHeight):380;
-      ctx.drawImage(evfImg,W/2-ew/2,60,ew,evfH);
+      const ew=evfImg.naturalWidth>0?evfImg.naturalWidth*(evfH/evfImg.naturalHeight):270;
+      ctx.drawImage(evfImg,W/2-ew/2,55,ew,evfH);
     }catch(e){}
 
     // Eurovision logo
-    const escH=80;
+    const escH=72;
     try{
-      const esw=escImg.naturalWidth>0?escImg.naturalWidth*(escH/escImg.naturalHeight):220;
-      ctx.drawImage(escImg,W/2-esw/2,178,esw,escH);
+      const esw=escImg.naturalWidth>0?escImg.naturalWidth*(escH/escImg.naturalHeight):200;
+      ctx.drawImage(escImg,W/2-esw/2,140,esw,escH);
     }catch(e){}
 
-    // "COMMUNITY VOTE" label above title
+    // "COMMUNITY VOTE" label
     ctx.fillStyle='rgba(168,85,247,0.9)';
     ctx.font='800 26px Montserrat,Arial,sans-serif';
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.letterSpacing='4px';
-    ctx.fillText('▸ COMMUNITY VOTE ◂', W/2, 298);
+    ctx.fillText('▸ COMMUNITY VOTE ◂', W/2, 258);
 
     // Big title block
     ctx.fillStyle='#fff';
     ctx.font='900 72px Montserrat,Arial,sans-serif';
-    ctx.fillText('TOP 10', W/2, 372);
+    ctx.fillText('TOP 10', W/2, 330);
 
-    ctx.font='900 42px Montserrat,Arial,sans-serif';
+    ctx.font='900 40px Montserrat,Arial,sans-serif';
     ctx.fillStyle='rgba(255,255,255,0.55)';
-    ctx.fillText('PREDICTED QUALIFIERS', W/2, 428);
+    ctx.fillText('PREDICTED QUALIFIERS', W/2, 384);
 
     // Semi label pill
     const semiLabel=(currentSemi===1?'1ST':'2ND')+' SEMI-FINAL';
-    const pillW=340, pillH=54, pillX=W/2-pillW/2, pillY=460;
+    const pillW=340, pillH=52, pillX=W/2-pillW/2, pillY=414;
     const pillG=ctx.createLinearGradient(pillX,0,pillX+pillW,0);
     pillG.addColorStop(0,'#7c00ff');pillG.addColorStop(1,'#ff03ff');
-    ctx.fillStyle=pillG; rr(ctx,pillX,pillY,pillW,pillH,27); ctx.fill();
+    ctx.fillStyle=pillG; rr(ctx,pillX,pillY,pillW,pillH,26); ctx.fill();
     ctx.fillStyle='#fff'; ctx.font='800 24px Montserrat,Arial,sans-serif';
     ctx.fillText(semiLabel, W/2, pillY+pillH/2);
 
     // Submission count
     ctx.fillStyle='rgba(255,255,255,0.35)';
     ctx.font='600 24px Montserrat,Arial,sans-serif';
-    ctx.fillText(`Based on ${total.toLocaleString()} prediction${total!==1?'s':''}`, W/2, 550);
+    ctx.fillText(`Based on ${total.toLocaleString()} prediction${total!==1?'s':''}`, W/2, 506);
 
-    // Divider line
+    // Divider
     const divG=ctx.createLinearGradient(PAD,0,W-PAD,0);
     divG.addColorStop(0,'transparent');
     divG.addColorStop(0.3,'rgba(168,85,247,0.6)');
     divG.addColorStop(0.7,'rgba(255,3,255,0.6)');
     divG.addColorStop(1,'transparent');
-    ctx.fillStyle=divG; ctx.fillRect(PAD,578,W-PAD*2,2);
+    ctx.fillStyle=divG; ctx.fillRect(PAD,530,W-PAD*2,2);
 
-    // ── COUNTRIES LIST ──
-    const listTop=606;
-    const listBottom=H-170; // leave space for footer
+    // ── COUNTRIES LIST ── fills remaining space, no footer
+    const listTop=548;
+    const listBottom=H-40;
     const availH=listBottom-listTop;
-    const rowH=Math.floor(availH/10); // 10 rows always
+    const rowH=Math.floor(availH/10);
     const maxCount=counts[top10[0]?.name]||1;
-    const medals=['🥇','🥈','🥉'];
+
+    // Draw medals as colored circles with text (no emoji rendering issues)
+    const medalColors=[['#FFD700','#B8860B'],['#C0C0C0','#808080'],['#CD7F32','#8B4513']];
 
     top10.forEach((c,i)=>{
       const ry=listTop+i*rowH;
@@ -916,100 +927,76 @@ function drawCommunityCanvas(top10, counts, total) {
       const pct=Math.round((cnt/total)*100);
       const barFill=cnt/maxCount;
 
-      // Row background — alternating
       if(i%2===0){
         ctx.fillStyle='rgba(255,255,255,0.03)';
         rr(ctx,PAD,ry+3,W-PAD*2,rowH-6,10); ctx.fill();
       }
 
-      // Left: rank number or medal
-      const rankW=70;
+      // Rank — colored circle for top 3, number for rest
+      const rankCX=PAD+36, rankR=Math.round(rowH*0.28);
       if(i<3){
-        ctx.font=`${Math.round(rowH*0.38)}px serif`;
-        ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.fillText(medals[i],PAD+rankW/2,rowCY+2);
+        const mc=medalColors[i];
+        const mg=ctx.createRadialGradient(rankCX,rowCY,0,rankCX,rowCY,rankR);
+        mg.addColorStop(0,mc[0]); mg.addColorStop(1,mc[1]);
+        ctx.fillStyle=mg; ctx.beginPath(); ctx.arc(rankCX,rowCY,rankR,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#fff';
+        ctx.font=`900 ${Math.round(rankR*1.1)}px Montserrat,Arial,sans-serif`;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(i+1,rankCX,rowCY+1);
       } else {
-        ctx.fillStyle='rgba(255,255,255,0.25)';
+        ctx.fillStyle='rgba(255,255,255,0.22)';
         ctx.font=`800 ${Math.round(rowH*0.28)}px Montserrat,Arial,sans-serif`;
-        ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.fillText(i+1,PAD+rankW/2,rowCY);
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(i+1,rankCX,rowCY);
       }
 
-      // Flag circle
-      const flagR=Math.round(rowH*0.33);
-      const flagCX=PAD+rankW+flagR+8;
+      // Flag
+      const flagR=Math.round(rowH*0.32);
+      const flagCX=PAD+rankR*2+flagR+22;
       ctx.save();
-      ctx.beginPath();ctx.arc(flagCX,rowCY,flagR,0,Math.PI*2);ctx.clip();
+      ctx.beginPath(); ctx.arc(flagCX,rowCY,flagR,0,Math.PI*2); ctx.clip();
       const fi=flagCache[c.cc];
-      if(fi&&fi.naturalWidth>0)ctx.drawImage(fi,flagCX-flagR,rowCY-flagR,flagR*2,flagR*2);
+      if(fi&&fi.naturalWidth>0) ctx.drawImage(fi,flagCX-flagR,rowCY-flagR,flagR*2,flagR*2);
       else{ctx.fillStyle='rgba(168,85,247,0.4)';ctx.fill();}
       ctx.restore();
-      // Flag ring — gradient for top 3
       if(i<3){
-        const ringG=ctx.createLinearGradient(flagCX-flagR,rowCY-flagR,flagCX+flagR,rowCY+flagR);
-        ringG.addColorStop(0,'#a855f7');ringG.addColorStop(1,'#ff03ff');
-        ctx.strokeStyle=ringG;
-      } else {
-        ctx.strokeStyle='rgba(255,255,255,0.15)';
-      }
+        const rg=ctx.createLinearGradient(flagCX-flagR,rowCY-flagR,flagCX+flagR,rowCY+flagR);
+        rg.addColorStop(0,medalColors[i][0]); rg.addColorStop(1,medalColors[i][1]);
+        ctx.strokeStyle=rg;
+      } else { ctx.strokeStyle='rgba(255,255,255,0.15)'; }
       ctx.lineWidth=3;
-      ctx.beginPath();ctx.arc(flagCX,rowCY,flagR,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath(); ctx.arc(flagCX,rowCY,flagR,0,Math.PI*2); ctx.stroke();
 
-      // Text area
+      // Text
       const textX=flagCX+flagR+18;
-      const pctW=110; // space for percent on right
+      const pctW=118;
       const textMaxW=W-PAD-textX-pctW-10;
-
-      // Country name
-      const nameFontSize=Math.round(rowH*0.28);
+      const nameFontSize=Math.round(rowH*0.29);
       ctx.fillStyle='#fff';
       ctx.font=`800 ${nameFontSize}px Montserrat,Arial,sans-serif`;
-      ctx.textAlign='left';ctx.textBaseline='middle';
-      const nameY=rowH>120?rowCY-nameFontSize*0.45:rowCY-nameFontSize*0.25;
+      ctx.textAlign='left'; ctx.textBaseline='middle';
+      const nameY=rowH>=110?rowCY-nameFontSize*0.42:rowCY;
       ctx.fillText(truncateText(ctx,c.name,textMaxW),textX,nameY);
 
-      // Progress bar (only if rowH big enough)
-      if(rowH>=110){
-        const barY=nameY+nameFontSize*0.75;
-        const barH2=Math.round(rowH*0.1);
-        const barW=textMaxW;
+      // Bar
+      if(rowH>=100){
+        const barY=nameY+nameFontSize*0.78;
+        const barH2=Math.max(8,Math.round(rowH*0.1));
         ctx.fillStyle='rgba(255,255,255,0.08)';
-        rr(ctx,textX,barY,barW,barH2,barH2/2); ctx.fill();
-        const fillW=Math.max(barH2,barW*barFill);
+        rr(ctx,textX,barY,textMaxW,barH2,barH2/2); ctx.fill();
+        const fillW=Math.max(barH2,textMaxW*barFill);
         const bG=ctx.createLinearGradient(textX,0,textX+fillW,0);
-        bG.addColorStop(0,'#7c00ff');bG.addColorStop(1,'#ff03ff');
-        ctx.fillStyle=bG;
-        rr(ctx,textX,barY,fillW,barH2,barH2/2); ctx.fill();
+        bG.addColorStop(0,'#7c00ff'); bG.addColorStop(1,'#ff03ff');
+        ctx.fillStyle=bG; rr(ctx,textX,barY,fillW,barH2,barH2/2); ctx.fill();
       }
 
-      // Percent on right
-      const pctColor=i<3?'#ff03ff':'rgba(255,255,255,0.6)';
+      // Percent
+      const pctColor=i<3?'#ff03ff':'rgba(255,255,255,0.55)';
       ctx.fillStyle=pctColor;
       ctx.font=`900 ${Math.round(rowH*0.3)}px Montserrat,Arial,sans-serif`;
-      ctx.textAlign='right';ctx.textBaseline='middle';
-      ctx.fillText(pct+'%',W-PAD-8,rowCY);
+      ctx.textAlign='right'; ctx.textBaseline='middle';
+      ctx.fillText(pct+'%',W-PAD-6,rowCY);
     });
-
-    // ── FOOTER BRANDING ──
-    const footY=H-160;
-    // Full-width gradient bar
-    const footG=ctx.createLinearGradient(0,0,W,0);
-    footG.addColorStop(0,'#5500cc');footG.addColorStop(0.5,'#aa00ff');footG.addColorStop(1,'#ff03ff');
-    ctx.fillStyle=footG; ctx.fillRect(0,footY,W,3);
-
-    // Footer background
-    ctx.fillStyle='rgba(255,255,255,0.04)'; ctx.fillRect(0,footY+3,W,H-footY-3);
-
-    // EVF logo small in footer
-    try{
-      const fh=56, fw=evfImg.naturalWidth>0?evfImg.naturalWidth*(fh/evfImg.naturalHeight):200;
-      ctx.drawImage(evfImg,W/2-fw/2,footY+18,fw,fh);
-    }catch(e){}
-
-    ctx.fillStyle='rgba(255,255,255,0.35)';
-    ctx.font='600 22px Montserrat,Arial,sans-serif';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('eurovisionfun.com · Eurovision Song Contest 2026',W/2,footY+96);
 
     ctx.restore();
 
