@@ -86,7 +86,7 @@ html,body{
 .menu-btn-stats{background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.85);}
 .menu-btn-icon{font-size:16px;opacity:0.6;}
 .stats-divider{text-align:center;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin:4px 0 2px;}
-.menu-btn-num{background:rgba(255,255,255,0.22);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0;}
+.menu-btn-arrow{font-size:18px;opacity:0.8;flex-shrink:0;}
 
 .countdowns-wrap{display:flex;flex-direction:column;gap:10px;width:100%;margin-bottom:22px;}
 .cd-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:12px 16px;}
@@ -265,11 +265,11 @@ html,body{
       <div class="menu-btns">
         <div class="cd-card" style="margin-bottom:10px;">
           <div class="cd-label cd-label-1"><span class="cd-dot cd-dot-1"></span>1st Semi-Final</div>
-          <div class="cd-date">Tuesday 12 May 2026 · 22:00 Athens time</div>
+          <div class="cd-date">Monday 12 May 2026 · 22:00 Athens time</div>
           <div id="cd1-wrap"></div>
         </div>
         <button class="menu-btn menu-btn-1" id="btn-sf1" onclick="handleSemiBtn(1)">
-          <span id="btn-sf1-label">1st Semi-Final</span><span class="menu-btn-num" id="btn-sf1-icon">1</span>
+          <span id="btn-sf1-label">1st Semi-Final</span><span class="menu-btn-arrow" id="btn-sf1-icon">→</span>
         </button>
 
         <div class="cd-card" style="margin-top:10px;margin-bottom:10px;">
@@ -278,7 +278,7 @@ html,body{
           <div id="cd2-wrap"></div>
         </div>
         <button class="menu-btn menu-btn-2" id="btn-sf2" onclick="handleSemiBtn(2)">
-          <span id="btn-sf2-label">2nd Semi-Final</span><span class="menu-btn-num" id="btn-sf2-icon">2</span>
+          <span id="btn-sf2-label">2nd Semi-Final</span><span class="menu-btn-arrow" id="btn-sf2-icon">→</span>
         </button>
 
         <div class="stats-divider">— Community Predictions —</div>
